@@ -1,0 +1,43 @@
+// This #include statement was automatically added by the Particle IDE.
+#include <JsonParserGeneratorRK.h>
+
+// This #include statement was automatically added by the Particle IDE.
+#include <Adafruit_DHT.h>
+
+#define DHTPIN 5
+
+#define DHTTYPE DHT11
+
+String sendData;
+
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+    dht.begin();
+    
+}
+
+void loop() {
+    delay(10000);
+    float humidity = dht.getHumidity();
+    float temperature = dht.getTempCelcius();
+    
+    sendData = String::format ("%.1f %,%.1f C",humidity,temperature);
+    
+    Particle.publish("TempAndHum", sendData);
+    
+    createEventPayload(temperature, humidity);
+    
+}
+
+void createEventPayload(float temperature, float humidity)
+{
+    JsonWriterStatic<256> jw;
+    {
+        JsonWriterAutoObject obj(&jw);
+        
+        jw.insertKeyValue("temp", temperature);
+        jw.insertKeyValue("humidity", humidity);
+    }
+    Particle.publish("temp-hum", jw.getBuffer(), PRIVATE);
+}
